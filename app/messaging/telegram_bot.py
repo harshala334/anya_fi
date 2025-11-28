@@ -31,7 +31,16 @@ class TelegramBot:
         if not settings.telegram_bot_token:
             raise ValueError("TELEGRAM_BOT_TOKEN not configured")
         
-        self.application = Application.builder().token(settings.telegram_bot_token).build()
+        # Increase timeouts for better stability
+        from telegram.request import HTTPXRequest
+        request = HTTPXRequest(
+            connection_pool_size=8,
+            read_timeout=60.0,
+            write_timeout=60.0,
+            connect_timeout=60.0
+        )
+        
+        self.application = Application.builder().token(settings.telegram_bot_token).request(request).build()
         self._setup_handlers()
     
     def _setup_handlers(self):
@@ -41,6 +50,7 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("mystats", self.stats_command))
         self.application.add_handler(CommandHandler("goals", self.goals_command))
+        self.application.add_handler(CommandHandler("dream", self.dream_command))
         
         # Message handler for all text messages
         self.application.add_handler(
@@ -162,6 +172,43 @@ class TelegramBot:
                     response += "\n"
         
         await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def dream_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /dream command."""
+        # Expected format: /dream [location] [type]
+        args = context.args
+        if not args or len(args) < 1:
+            await update.message.reply_text(
+                "🔮 **Future-Self Synthesizer**\n\n"
+                "Visualize your dream home! Usage:\n"
+                "`/dream [City] [Type]`\n\n"
+                "Example:\n"
+                "`/dream Mumbai 2BHK`\n"
+                "`/dream Bangalore 3BHK`",
+                parse_mode='Markdown'
+            )
+            return
+
+        location = args[0]
+        property_type = args[1] if len(args) > 1 else "2BHK"
+        
+        await update.message.reply_text(f"🔮 Gazing into the crystal ball for a {property_type} in {location}...")
+        await update.message.chat.send_action("upload_photo")
+        
+        try:
+            from app.agents.future_self_agent import FutureSelfAgent
+            agent = FutureSelfAgent()
+            result = await agent.visualize_dream_home(location, property_type)
+            
+            # Send Photo with Caption
+            await update.message.reply_photo(
+                photo=result['image_url'],
+                caption=result['message'],
+                parse_mode='Markdown'
+            )
+        except Exception as e:
+            logger.error(f"Dream command failed: {e}")
+            await update.message.reply_text("😓 My crystal ball is a bit foggy right now. Please try again later.")
     
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle regular text messages."""
