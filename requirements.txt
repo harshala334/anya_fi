@@ -1,0 +1,27 @@
+# Core Framework
+fastapi
+uvicorn[standard]
+python-dotenv
+
+# Database
+sqlalchemy
+alembic
+psycopg2-binary
+
+# Redis for session management
+redis
+hiredis
+
+# Telegram Bot
+python-telegram-bot[webhooks]
+httpx
+
+# AI & LLM
+openai
+
+# Data validation
+pydantic
+pydantic-settings
+
+# Utilities
+python-dateutil
