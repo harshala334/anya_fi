@@ -105,7 +105,7 @@ Recommends socially intelligent alternatives when peer pressure causes costly pl
 - **SQLAlchemy ORM**
 
 ### **AI Layer**
-- **OpenAI LLM (Agent Brain)**  
+- **OpenAI/ Groq LLM (Agent Brain)**  
 - **Model Context Protocol (MCP) for tool orchestration**  
 - **Image Generation: OpenAI / Gemini**
 
