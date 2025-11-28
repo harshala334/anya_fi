@@ -51,6 +51,7 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("mystats", self.stats_command))
         self.application.add_handler(CommandHandler("goals", self.goals_command))
         self.application.add_handler(CommandHandler("dream", self.dream_command))
+        self.application.add_handler(CommandHandler("social", self.social_command))
         
         # Message handler for all text messages
         self.application.add_handler(
@@ -209,6 +210,39 @@ class TelegramBot:
         except Exception as e:
             logger.error(f"Dream command failed: {e}")
             await update.message.reply_text("😓 My crystal ball is a bit foggy right now. Please try again later.")
+
+    async def social_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /social command."""
+        # Expected format: /social [activity] [location]
+        args = context.args
+        if not args or len(args) < 2:
+            await update.message.reply_text(
+                "💡 **Social Currency Optimizer**\n\n"
+                "Find budget-friendly alternatives! Usage:\n"
+                "`/social [Activity] [Location]`\n\n"
+                "Example:\n"
+                "`/social drinks Bandra`\n"
+                "`/social dinner Indiranagar`",
+                parse_mode='Markdown'
+            )
+            return
+
+        activity = args[0]
+        location = " ".join(args[1:])
+        
+        await update.message.reply_text(f"🕵️ Looking for cool spots for {activity} in {location}...")
+        await update.message.chat.send_action("typing")
+        
+        try:
+            from app.agents.social_agent import SocialAgent
+            agent = SocialAgent()
+            result = await agent.suggest_social_hack(activity, location)
+            
+            await update.message.reply_text(result['message'], parse_mode='Markdown')
+            
+        except Exception as e:
+            logger.error(f"Social command failed: {e}")
+            await update.message.reply_text("😓 Couldn't find any spots right now. Maybe try a different area?")
     
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle regular text messages."""
