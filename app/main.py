@@ -136,6 +136,32 @@ async def whatsapp_webhook_handler(request: Request):
     return result
 
 
+# ==================== IMPULSE SPHERE ENDPOINTS ====================
+
+from pydantic import BaseModel
+from app.agents.impulse_agent import ImpulseAgent
+
+class ImpulseDetectionRequest(BaseModel):
+    user_id: str
+    url: str
+    merchant: str
+    product_details: dict = {} # Can contain 'items': List[str]
+
+@app.post("/api/impulse/detect")
+async def detect_impulse(request: ImpulseDetectionRequest, db: Session = Depends(get_db)):
+    """
+    Detect impulse buying behavior from Chrome Extension.
+    """
+    agent = ImpulseAgent(db)
+    result = await agent.evaluate_and_intervene(
+        user_id=request.user_id,
+        url=request.url,
+        merchant=request.merchant,
+        product_details=request.product_details
+    )
+    return result
+
+
 # ==================== LEGACY ENDPOINTS (Backward Compatibility) ====================
 
 def calc_month_nonessential_spend(user_id: str) -> float:

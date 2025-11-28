@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Anya.fi Settings</title>
+  <style>
+    body { width: 300px; padding: 15px; font-family: sans-serif; }
+    input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background-color: #28b7b5; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #1e8e8c; }
+    .status { margin-top: 10px; font-size: 12px; color: green; }
+  </style>
+</head>
+<body>
+  <h3>Anya.fi Setup</h3>
+  <p>Enter your Telegram User ID:</p>
+  <input type="text" id="userId" placeholder="e.g. 123456789">
+  <button id="saveBtn">Save</button>
+  <div id="status" class="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

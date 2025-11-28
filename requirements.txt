@@ -18,6 +18,7 @@ httpx
 
 # AI & LLM
 openai
+groq
 
 # Data validation
 pydantic
