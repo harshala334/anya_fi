@@ -1,6 +1,3 @@
-#!/bin/bash
-
-source venv/bin/activate
 
 # Start the Telegram bot in the background
 python run_bot.py &
