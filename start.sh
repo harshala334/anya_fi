@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # Start the Telegram bot in the background
 python run_bot.py &
