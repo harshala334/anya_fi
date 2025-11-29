@@ -3,6 +3,7 @@
 import logging
 from typing import Optional
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -251,11 +252,16 @@ class TelegramBot:
         user_id = str(update.effective_user.id)
         dashboard_url = f"{settings.base_url}/dashboard?user_id={user_id}"
         
+        # Log to console for debugging
+        print(f"🔗 Dashboard URL generated for user {user_id}: {dashboard_url}")
+        logger.info(f"Dashboard URL: {dashboard_url}")
+        
         await update.message.reply_text(
-            f"📊 **Your Financial Dashboard**\n\n"
+            f"📊 <b>Your Financial Dashboard</b>\n\n"
             f"Click the link below to view your goals, budget, and transactions visually:\n\n"
-            f"[Open Dashboard]({dashboard_url})",
-            parse_mode='Markdown'
+            f"<a href=\"{dashboard_url}\">Open Dashboard</a>\n\n"
+            f"<i>(If the link above is not clickable, try this raw link: {dashboard_url})</i>",
+            parse_mode=ParseMode.HTML
         )
     
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):

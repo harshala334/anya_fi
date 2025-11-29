@@ -125,6 +125,15 @@ async def dashboard(request: Request, user_id: str):
         # Get recent transactions (last 10)
         transactions = agent.tools.fetch_recent_transactions(days=30)
         
+        # Convert timestamps to datetime objects for the template
+        for tx in transactions:
+            if isinstance(tx['timestamp'], str):
+                try:
+                    from datetime import datetime
+                    tx['timestamp'] = datetime.fromisoformat(tx['timestamp'])
+                except ValueError:
+                    pass
+        
         return templates.TemplateResponse(
             "dashboard.html",
             {
