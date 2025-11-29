@@ -1,4 +1,6 @@
-from fastapi import FastAPI, BackgroundTasks, Depends, Request, Query
+from fastapi import FastAPI, BackgroundTasks, Depends, Request, Query, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from contextlib import asynccontextmanager
@@ -11,6 +13,8 @@ from app.db.models import User, Goal, Transaction, GoalStatus, TransactionCatego
 from app.messaging.telegram_bot import get_bot
 from app.messaging.telegram_notifier import send_telegram_text
 from app.messaging.whatsapp_bot import get_whatsapp_bot
+from app.agents.mcp import MCPAgent
+from app.db.database import get_db_context
 
 # Legacy imports for backward compatibility
 from app.models import SetGoalRequest, AddTransactionRequest
@@ -60,6 +64,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Setup templates
+templates = Jinja2Templates(directory="app/templates")
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -99,6 +106,34 @@ def health():
         "whatsapp": "configured" if settings.whatsapp_access_token else "not configured",
         "groq": "configured" if settings.groq_api_key else "not configured"
     }
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request, user_id: str):
+    """
+    Render the user dashboard.
+    """
+    with get_db_context() as db:
+        agent = MCPAgent(db, user_id)
+        
+        # Get budget status
+        budget_status = agent.tools.check_budget_status()
+        
+        # Get active goals
+        goals = agent.tools.get_active_goals()
+        
+        # Get recent transactions (last 10)
+        transactions = agent.tools.fetch_recent_transactions(days=30)
+        
+        return templates.TemplateResponse(
+            "dashboard.html",
+            {
+                "request": request,
+                "budget_status": budget_status,
+                "goals": goals,
+                "transactions": transactions
+            }
+        )
 
 
 # ==================== WHATSAPP WEBHOOK ENDPOINTS ====================

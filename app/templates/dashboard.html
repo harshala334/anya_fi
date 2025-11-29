@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anya.fi Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #28b7b5;
+            --primary-dark: #1e8e8c;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 9999px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #60a5fa);
+            border-radius: 9999px;
+            transition: width 1s ease-in-out;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Transactions List */
+        .transaction-list {
+            list-style: none;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .tx-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tx-merchant {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .tx-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .tx-amount {
+            font-weight: 600;
+        }
+
+        .tx-amount.expense {
+            color: var(--text-main);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+        }
+
+        /* Budget Status Colors */
+        .status-green {
+            color: var(--success);
+        }
+
+        .status-orange {
+            color: var(--warning);
+        }
+
+        .status-red {
+            color: var(--danger);
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Anya.fi</h1>
+            <p class="subtitle">Financial Co-Pilot Dashboard</p>
+        </header>
+
+        <!-- Budget Overview -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Monthly Budget</h2>
+                {% if budget_status.verdict == 'GREEN' %}
+                <span class="status-green">On Track</span>
+                {% elif budget_status.verdict == 'ORANGE' %}
+                <span class="status-orange">Caution</span>
+                {% elif budget_status.verdict == 'RED' %}
+                <span class="status-red">Over Budget</span>
+                {% elif budget_status.verdict == 'NO_GOAL' %}
+                <span class="status-muted">No Goal Set</span>
+                {% endif %}
+            </div>
+
+            {% if budget_status.verdict != 'NO_GOAL' %}
+            <div class="progress-container">
+                <div class="progress-bar"
+                    style="width: {{ (budget_status.total_spent / budget_status.budget * 100) if budget_status.budget > 0 else 0 }}%; background: {{ '#ef4444' if budget_status.verdict == 'RED' else '#10b981' }}">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">₹{{ "{:,.0f}".format(budget_status.total_spent) }}</div>
+                    <div class="stat-label">Spent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">₹{{ "{:,.0f}".format(budget_status.remaining) }}</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">₹{{ "{:,.0f}".format(budget_status.budget) }}</div>
+                    <div class="stat-label">Budget</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Set a saving goal to track your budget!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Goals -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Active Goals</h2>
+            </div>
+
+            {% if goals %}
+            {% for goal in goals %}
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: 500;">{{ goal.title }}</span>
+                    <span style="color: var(--primary);">{{ "{:.0f}".format(goal.progress_percentage) }}%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: {{ goal.progress_percentage }}%"></div>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; font-size: 0.875rem; color: var(--text-muted);">
+                    <span>₹{{ "{:,.0f}".format(goal.current_amount) }} saved</span>
+                    <span>Target: ₹{{ "{:,.0f}".format(goal.target_amount) }}</span>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <p>No active goals yet. Set one with Anya on Telegram!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Transactions</h2>
+            </div>
+
+            {% if transactions %}
+            <ul class="transaction-list">
+                {% for tx in transactions %}
+                <li class="transaction-item">
+                    <div class="tx-info">
+                        <span class="tx-merchant">{{ tx.merchant }}</span>
+                        <span class="tx-date">{{ tx.timestamp.strftime('%b %d, %Y') }} • {{ tx.category }}</span>
+                    </div>
+                    <span class="tx-amount expense">-₹{{ "{:,.0f}".format(tx.amount) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div class="empty-state">
+                <p>No transactions found for this month.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>

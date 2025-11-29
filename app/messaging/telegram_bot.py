@@ -52,6 +52,7 @@ class TelegramBot:
         self.application.add_handler(CommandHandler("goals", self.goals_command))
         self.application.add_handler(CommandHandler("dream", self.dream_command))
         self.application.add_handler(CommandHandler("social", self.social_command))
+        self.application.add_handler(CommandHandler("dashboard", self.dashboard_command))
         
         # Message handler for all text messages
         self.application.add_handler(
@@ -82,7 +83,8 @@ class TelegramBot:
             "/start - Get started\n"
             "/help - Show this help\n"
             "/mystats - Check your budget status\n"
-            "/goals - View your active goals\n\n"
+            "/goals - View your active goals\n"
+            "/dashboard - View your visual dashboard\n\n"
             "💬 **Or just chat with me!**\n"
             "I understand natural language, so feel free to ask questions or share your goals.\n\n"
             "Examples:\n"
@@ -243,6 +245,18 @@ class TelegramBot:
         except Exception as e:
             logger.error(f"Social command failed: {e}")
             await update.message.reply_text("😓 Couldn't find any spots right now. Maybe try a different area?")
+    
+    async def dashboard_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /dashboard command."""
+        user_id = str(update.effective_user.id)
+        dashboard_url = f"{settings.base_url}/dashboard?user_id={user_id}"
+        
+        await update.message.reply_text(
+            f"📊 **Your Financial Dashboard**\n\n"
+            f"Click the link below to view your goals, budget, and transactions visually:\n\n"
+            f"[Open Dashboard]({dashboard_url})",
+            parse_mode='Markdown'
+        )
     
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle regular text messages."""

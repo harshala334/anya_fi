@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     
     # Application
     app_name: str = "Anya.fi - Shopping Guardian"
+    base_url: str = "http://localhost:8000"
     debug: bool = False
     
     # Database
