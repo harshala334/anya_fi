@@ -96,8 +96,7 @@ Recommends socially intelligent alternatives when peer pressure causes costly pl
 
 ---
 
-## 🛠 Tech Stack (Fixed Best Choices)
-
+## 🛠 Tech Stack
 ### **Backend**
 - **FastAPI (Python)**  
 - **PostgreSQL (Primary Database)**  
